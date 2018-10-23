@@ -1,0 +1,21 @@
+variables:
+
+  path: "~" # change this to a safe path where you won't get a million things
+  filext: iso # change this to a filetype you want to test on
+
+tasks:
+
+  test_hash:
+    filesystem:
+      path: '{? path ?}'
+      retrieve: files
+      recursive: yes
+      regexp: .*\.({? filext ?})$
+    file_hash: yes
+    accept_all: yes
+    list_add:
+    - entry_list: hashed_files
+
+  dump_them:
+    entry_list: hashed_files
+    accept_all: yes
