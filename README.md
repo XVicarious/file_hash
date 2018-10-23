@@ -14,3 +14,17 @@ File hasing plugin for Flexget
   - `file_hash: yes`
 - To use a custom hashing method (for example sha1):
   - `file_hash: sha1`
+
+## Example
+```yml
+tasks:
+  hash_my_files:
+    seen: local
+    filesystem:
+      path: /path/to/files
+      retrieve: files
+      # It is highly suggested to use regex to only get specific files as hashing a file takes time
+    file_hash: yes
+    list_add:
+      - entry_list: hashed_files
+```
