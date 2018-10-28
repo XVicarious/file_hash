@@ -3,6 +3,7 @@ from __future__ import unicode_literals, division, absolute_import
 
 import hashlib
 import logging
+import math
 import os
 from builtins import *  # noqa pylint: disable=unused-import, redefined-builtin
 
@@ -54,8 +55,13 @@ class FileHashPlugin(object):
             log.verbose('Hasing with algorithm: %s', algorithm)
             current_hasher = hasher.copy()
             with open(entry['location'], 'rb') as to_hash:
+                to_hash_size = to_hash.tell()
+                hundered_meg = size_units.MB * 100
+                total_pieces = math.ciel(to_hash_size / hundered_meg)
+                i = 0
                 while True:
-                    log.trace('Logging new piece of %s', entry['title'])
+                    i += 1
+                    log.debug('Hashing piece: %s/%s', i, total_pieces)
                     piece = to_hash.read(size_units.MB * 100)
                     if not piece:
                         break
@@ -64,7 +70,7 @@ class FileHashPlugin(object):
                 entry['file_hash_hash'] = current_hasher.hexdigest()
                 entry['file_hash_modified'] = os.path.getmtime(entry['location'])
                 entry['file_hash_bytes'] = os.path.getsize(entry['location'])
-                log.debug('%s:\nhash: %s\nmtime: %s\nbyes: %s',
+                log.debug('%s|%s|%s|%s',
                           entry['title'], entry['file_hash_hash'],
                           entry['file_hash_modified'], entry['file_hash_bytes'])
                 to_hash.close()
