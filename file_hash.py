@@ -55,16 +55,16 @@ class FileHashPlugin(object):
             log.verbose('Hasing with algorithm: %s', algorithm)
             current_hasher = hasher.copy()
             with open(entry['location'], 'rb') as to_hash:
-                to_hash_size = to_hash.tell()
+                to_hash_size = os.path.getsize(entry['location'])
                 hundered_meg = MiB * 100
                 total_pieces = math.ceil(to_hash_size / hundered_meg)
                 i = 0
                 while True:
-                    i += 1
-                    log.debug('Hashing piece: %s/%s', i, total_pieces)
                     piece = to_hash.read(hundered_meg)
                     if not piece:
                         break
+                    i += 1
+                    log.debug('Hashing piece: %s/%s', i, total_pieces)
                     current_hasher.update(piece)
                 entry['file_hash_type'] = algorithm
                 entry['file_hash_hash'] = current_hasher.hexdigest()
@@ -79,3 +79,4 @@ class FileHashPlugin(object):
 @event('plugin.register')
 def register_plugin():
     plugin.register(FileHashPlugin, PLUGIN_ID, api_ver=2, interfaces=['task', 'series_metainfo', 'movie_metainfo'])
+
