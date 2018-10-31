@@ -5,6 +5,7 @@ import hashlib
 import logging
 import math
 import os
+from enum import Enum
 from builtins import *  # noqa pylint: disable=unused-import, redefined-builtin
 
 from flexget import plugin
@@ -14,21 +15,41 @@ PLUGIN_ID = 'file_hash'
 
 log = logging.getLogger(PLUGIN_ID)
 
-# Please forgive me for this
-B = 1
-KiB = B * 1024
-MiB = KiB * 1024
-GiB = MiB * 1024
+
+class Bytes(Enum):
+    """ Definitions for bytes and SI, IEC units """
+    _si = 1000
+    _iec = 1024
+    B = 1
+    KB = B * _si
+    MB = KB * _si
+    GB = MB * _si
+    KiB = B * _iec
+    MiB = KiB * _iec
+    GiB = MiB * _iec
 
 
 class FileHashPlugin(object):
     """ Task class that does the hashing """
 
+    @staticmethod
+    def __default_algo():
+        return 'blake2b' if 'blake2b' in hashlib.algorithms_available else 'md5'
+
     schema = {
         'oneOf': [
             {'type': 'boolean'},
             {'type': 'string',
-             'enum': list(hashlib.algorithms_available)}
+             'enum': list(hashlib.algorithms_available)},
+            {'type': 'object',
+             'properties': {
+                 'algorithm': {
+                     'type': 'string',
+                     'enum': list(hashlib.algorithms_available),
+                     'default': __default_algo()},
+                 'size': {'type': 'integer', 'default': 25},
+                 'start': {'type': 'integer', 'default': 50},
+                 'end': {'type': 'integer'}}}
         ]
     }
 
@@ -37,10 +58,6 @@ class FileHashPlugin(object):
         if isinstance(check, bool) and check:
             return True
         return False
-
-    @staticmethod
-    def __default_algo():
-        return 'blake2b' if 'blake2b' in hashlib.algorithms_available else 'md5'
 
     def __get_algo(self, config):
         return self.__default_algo() if self.__strict_boolean(config) else config
@@ -56,7 +73,7 @@ class FileHashPlugin(object):
             current_hasher = hasher.copy()
             with open(entry['location'], 'rb') as to_hash:
                 to_hash_size = os.path.getsize(entry['location'])
-                hundered_meg = MiB * 100
+                hundered_meg = Bytes.MiB * 100
                 total_pieces = math.ceil(to_hash_size / hundered_meg)
                 i = 0
                 while True:
@@ -79,4 +96,3 @@ class FileHashPlugin(object):
 @event('plugin.register')
 def register_plugin():
     plugin.register(FileHashPlugin, PLUGIN_ID, api_ver=2, interfaces=['task', 'series_metainfo', 'movie_metainfo'])
-
