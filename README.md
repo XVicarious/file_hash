@@ -30,6 +30,13 @@ templates:
     <<: *any-file-input-plugin
     file_hash: yes
     
+  file_hash_basic_extended: # These are the settings when you use "file_hash: yes"
+    <<: *any-file-input-plugin
+    file_hash:
+      algorithm: blake2b # Or if your system doesn't have blake2b, this will be md5
+      size: 25
+      start: 50
+    
   file_hash_algorithm:
     <<: *any-file-input-plugin
     file_hash: sha1
