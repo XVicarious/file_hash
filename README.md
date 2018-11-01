@@ -4,6 +4,7 @@ File hasing plugin for Flexget
 ## Notes
 - Currently, in interest of supporting Python 2.7 this plugin operates linearlly.
 - I have plans to add support for [asyncio](https://docs.python.org/3/library/asyncio.html) for those Python versions that do support it
+- **HEY, LISTEN:** Even though `stop` and `time` are in the schema, they are not implemented yet.
 
 ## Usage
 - The default hashing method depends on your python installation:
@@ -14,17 +15,29 @@ File hasing plugin for Flexget
   - `file_hash: yes`
 - To use a custom hashing method (for example sha1):
   - `file_hash: sha1`
+- You may choose ***MAX*** 2 of the following options: `size`, `start`, `stop`.
+  - Using all three of these together sets up a chance that the difference between `start` and `stop` could be either smaller or larger than `size`.
+- If the `start` position is larger than size of the file, one of two things will happen:
+  1. If the size of the file is smaller than `size`, `start` is set to 0, ***OR***
+  1. If the size of the file is larger than `size` (but still smaller than `start`), `start` will be set to the size of the file minus `size`
+- To use advanced options, see below
 
 ## Example
 ```yml
-tasks:
-  hash_my_files:
-    seen: local
-    filesystem:
-      path: /path/to/files
-      retrieve: files
-      # It is highly suggested to use regex to only get specific files as hashing a file takes time
+templates:
+  
+  file_hash_basic:
+    <<: *any-file-input-plugin
     file_hash: yes
-    list_add:
-      - entry_list: hashed_files
+    
+  file_hash_algorithm:
+    <<: *any-file-input-plugin
+    file_hash: sha1
+    
+  file_hash_advanced:
+    <<: *any-file-input-plugin
+    file_hash:
+      algorithm: sha256 # Optional, default will be chosen if this is not set
+      size: 1 # Will hash 1MiB of the given file
+      start: 25 # Will start at 25MiB into the file, see usage for how this applies to files smaller than this value
 ```
