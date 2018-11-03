@@ -3,7 +3,6 @@ from __future__ import unicode_literals, division, absolute_import
 
 import hashlib
 import logging
-import math
 import os
 from builtins import *  # noqa pylint: disable=unused-import, redefined-builtin
 
@@ -69,6 +68,8 @@ class FileHashPlugin(object):
         ]
     }
 
+    plugin_fields = {'file_hash_type', 'file_hash_hash', 'file_hash_modified', 'file_hash_bytes'}
+
     @staticmethod
     def __strict_boolean(check):
         if isinstance(check, bool) and check:
@@ -85,6 +86,8 @@ class FileHashPlugin(object):
         hasher = hashlib.new(algorithm)
         log.verbose('Hasing with algorithm: %s', algorithm)
         # todo: add conditions to adapt to users' configuration
+        if self.__strict_boolean(config):
+            config = {True}
         hash_portion_size = IECUnit.MiB * (config['size'] if 'size' in config else 25)
         log.debug('Hashing %s MiB of each file.', hash_portion_size)
         hash_portion_start = IECUnit.MiB * (config['start'] if 'start' in config else 50)
@@ -93,7 +96,7 @@ class FileHashPlugin(object):
         log.debug('Hashing ending at %s MiB.', hash_portion_stop)
         for entry in task.entries:
             file_size = os.path.getsize(entry['location'])
-            if all(field in entry for field in ['file_hash_type', 'file_hash_hash', 'file_hash_modified', 'file_hash_bytes']):
+            if all(field in entry for field in self.plugin_fields):
                 if entry['file_hash_type'] == algorithm:
                     if entry['file_hash_modified'] == os.path.getmtime(entry['location']):
                         if entry['file_hash_bytes'] == file_size:
@@ -109,8 +112,9 @@ class FileHashPlugin(object):
                         log.debug('The file is less than the set size to to hash, setting start position to 0')
                         tmp_hash_portion_start = 0
                     else:
-                        tmp_hash_portion_start = file_size -  hash_portion_size
-                        log.debug('The size of the file is greater than the set size to hash, setting start position to %s MiB', tmp_hash_portion_start)
+                        tmp_hash_portion_start = file_size - hash_portion_size
+                        log.debug('The size of the file is greater than the set size to hash, \
+                                   setting start position to %s MiB', tmp_hash_portion_start)
                 to_hash.seek(tmp_hash_portion_start)
                 piece = to_hash.read(hash_portion_size)
                 current_hasher.update(piece)
@@ -119,7 +123,7 @@ class FileHashPlugin(object):
                 entry['file_hash_modified'] = os.path.getmtime(entry['location'])
                 entry['file_hash_bytes'] = os.path.getsize(entry['location'])
                 log.debug('%s|%s|%s|%s',
-                         entry['title'], entry['file_hash_hash'],
+                          entry['title'], entry['file_hash_hash'],
                           entry['file_hash_modified'], entry['file_hash_bytes'])
                 to_hash.close()
 
