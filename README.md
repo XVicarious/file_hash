@@ -2,9 +2,10 @@
 File hasing plugin for Flexget
 
 ## Notes
-- Currently, in interest of supporting Python 2.7 this plugin operates linearlly.
-- I have plans to add support for [asyncio](https://docs.python.org/3/library/asyncio.html) for those Python versions that do support it
-- **HEY, LISTEN:** Even though `stop` and `time` are in the schema, they are not implemented yet.
+  - While it may work on other versions, I only will support Python 3.6+
+  - I have decided that as the depreciation of Python 2.7 is a little over a year away, I will not be bothering to support it.
+  - I have plans to add support for [asyncio](https://docs.python.org/3/library/asyncio.html)
+  - **HEY, LISTEN:** Even though `stop` and `time` are in the schema, they are not implemented yet.
 
 ## Usage
 - The default hashing method depends on your python installation:
