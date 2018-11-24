@@ -7,20 +7,20 @@ File hasing plugin for Flexget
 -   **HEY, LISTEN:** Even though `stop` and `time` are in the schema, they are not implemented yet.
 
 ## Usage
-- The default hashing method depends on your python installation:
-  - If you have Python 3.6+, it will use [BLAKE2b](https://en.wikipedia.org/wiki/BLAKE_%28hash_function%29#BLAKE2)
-  - Otherwise, it will use [MD5](https://en.wikipedia.org/wiki/MD5)
-- The list of usable methods is determined by `hashlib.algorithms_available`
-- To use the default hashing method:
-  - `file_hash: yes`
-- To use a custom hashing method (for example sha1):
-  - `file_hash: sha1`
-- You may choose ***MAX*** 2 of the following options: `size`, `start`, `stop`.
-  - Using all three of these together sets up a chance that the difference between `start` and `stop` could be either smaller or larger than `size`.
-- If the `start` position is larger than size of the file, one of two things will happen:
+-   The default hashing method depends on your python installation:
+  -   If you have Python 3.6+, it will use [BLAKE2b](https://en.wikipedia.org/wiki/BLAKE_%28hash_function%29#BLAKE2)
+  -   Otherwise, it will use [MD5](https://en.wikipedia.org/wiki/MD5)
+-   The list of usable methods is determined by `hashlib.algorithms_available`
+-   To use the default hashing method:
+  -   `file_hash: yes`
+-   To use a custom hashing method (for example sha1):
+  -   `file_hash: sha1`
+-   You may choose ***MAX*** 2 of the following options: `size`, `start`, `stop`.
+  -   Using all three of these together sets up a chance that the difference between `start` and `stop` could be either smaller or larger than `size`.
+-   If the `start` position is larger than size of the file, one of two things will happen:
   1. If the size of the file is smaller than `size`, `start` is set to 0, ***OR***
   1. If the size of the file is larger than `size` (but still smaller than `start`), `start` will be set to the size of the file minus `size`
-- To use advanced options, see below
+-   To use advanced options, see below
 
 ## Example
 ```yml
