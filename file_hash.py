@@ -3,17 +3,18 @@
 import hashlib
 import logging
 import os
-from typing import Dict
 from builtins import *  # noqa pylint: disable=unused-import, redefined-builtin
+from typing import Dict
 
 from flexget import plugin
 from flexget.event import event
+from flexget.logger import FlexGetLogger
 
 from .cunit import IECUnit
 
 PLUGIN_ID = 'file_hash'
 
-log = logging.getLogger(PLUGIN_ID)
+log: FlexGetLogger = logging.getLogger(PLUGIN_ID)
 
 
 class FileHashPlugin(object):
@@ -114,12 +115,15 @@ class FileHashPlugin(object):
         log.debug('Hashing %s MiB of each file.', hash_portion['size'])
         log.debug('Hashing starting %s MiB into file.', hash_portion['start'])
         log.debug('Hashing ending at %s MiB.', hash_portion['stop'])
+        len_entries = len(task.entries)
+        idx = 0
         for entry in task.entries:
+            idx += 1
             file_size = os.path.getsize(entry['location'])
             if self.compare_entry(entry, config):
                 log.verbose('This file seems to be unmodified, skipping')
                 continue
-            log.verbose('Hasing %s', entry['location'])
+            log.verbose('%s/%s: Hasing %s', idx,  len_entries, entry['location'])
             current_hasher = hasher.copy()
             tmp_hash_portion_start = -1
             if file_size < hash_portion['start']:
@@ -171,15 +175,20 @@ class FileHash(object):
         self.modified = modified
         self.size = size
 
+    def __eq__(self, other):
+        return isinstance(other, FileHash) and\
+               self.algorithm == other.algorithm and\
+               self.file_hash == other.file_hash
+
     def __repr__(self):
         """Represent a FileHash."""
-        return '<FileHash: \
-                algorithm = {0}, \
-                start = {1}, stop = {2}, \
-                chunk_size = {3}, \
-                file_hash = {4}, \
-                modified = {5}, \
-                size = {6}'.format(
+        return """<FileHash: \
+                algorithm={0}, \
+                start={1}, stop={2}, \
+                chunk_size={3}, \
+                file_hash={4}, \
+                modified={5}, \
+                size={6}""".format(
                     self.algorithm,
                     self.start, self.stop,
                     self.chunk_size,
